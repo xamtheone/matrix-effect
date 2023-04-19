@@ -1,10 +1,12 @@
 <?php
-
-const CELL_LIFE = 40;
+$matrixHeight = `tput lines` - 1;
+$matrixWidth = `tput cols` - 1;
+define('CELL_LIFE', intdiv($matrixHeight, 1.2));
 // does not look good without a monospaced font for japanese
 //const CHARS = ["ァ","ア","ィ","イ","ゥ","ウ","ェ","エ","ォ","オ","カ","ガ","キ","ギ","ク","グ","ケ","ゲ","コ","ゴ","サ","ザ","シ","ジ","ス","ズ","セ","ゼ","ソ","ゾ","タ","ダ","チ","ヂ","ッ","ツ","ヅ","テ","デ","ト","ド","ナ","ニ","ヌ","ネ","ノ","ハ","バ","パ","ヒ","ビ","ピ","フ","ブ","プ","ヘ","ベ","ペ","ホ","ボ","ポ","マ","ミ","ム","メ","モ","ャ","ヤ","ュ","ユ","ョ","ヨ","ラ","リ","ル","レ","ロ","ヮ","ワ","ヰ","ヱ","ヲ","ン","ヴ","ヵ","ヶ","ヷ","ヸ","ヹ","ヺ"];
 
 define('CHARS', array_merge(range('A', 'z'), range('0', '9')));
+define('COLOR_RANGE', [16, 22, 28, 34, 40, 46, 255]);
 class Cell
 {
   public function __construct(
@@ -16,6 +18,7 @@ class Cell
 function getRandChar() {
   return CHARS[random_int(0, count(CHARS) - 1)];
 }
+
 function getMatrix($height, $width)
 {
   $matrix = [];
@@ -28,9 +31,6 @@ function getMatrix($height, $width)
 
   return $matrix;
 }
-
-$matrixHeight = `tput lines` - 1;
-$matrixWidth = `tput cols` - 1;
 
 $matrix = getMatrix($matrixHeight, $matrixWidth);
 
@@ -55,7 +55,6 @@ while (true) {
   // pick a random color to set a value and start the rain
   $col = random_int(0, $matrixWidth-1);
   $matrix[0][$col] = new Cell(getRandChar());
-
 
   $newMatrix = getMatrix($matrixHeight, $matrixWidth);
 
@@ -92,8 +91,8 @@ while (true) {
   // Rendering
   foreach ($matrix as $h => $row) {
     foreach ($row as $cell) {
-      // TODO actually have a real palette for shades of green and clamp values correctly for the original effect
-      $color = $cell->life + 100;
+      $ci = floor($cell->life / CELL_LIFE * (count(COLOR_RANGE) - 1));
+      $color = COLOR_RANGE[$ci];
       echo "\x1b[38;5;{$color}m";
       echo $cell->char;
     }
