@@ -1,16 +1,30 @@
 <?php
 $matrixHeight = `tput lines` - 1;
-$matrixWidth = `tput cols` - 1;
-define('CELL_LIFE', intdiv($matrixHeight, 1.2));
-// does not look good without a monospaced font for japanese
-//const CHARS = ["ァ","ア","ィ","イ","ゥ","ウ","ェ","エ","ォ","オ","カ","ガ","キ","ギ","ク","グ","ケ","ゲ","コ","ゴ","サ","ザ","シ","ジ","ス","ズ","セ","ゼ","ソ","ゾ","タ","ダ","チ","ヂ","ッ","ツ","ヅ","テ","デ","ト","ド","ナ","ニ","ヌ","ネ","ノ","ハ","バ","パ","ヒ","ビ","ピ","フ","ブ","プ","ヘ","ベ","ペ","ホ","ボ","ポ","マ","ミ","ム","メ","モ","ャ","ヤ","ュ","ユ","ョ","ヨ","ラ","リ","ル","レ","ロ","ヮ","ワ","ヰ","ヱ","ヲ","ン","ヴ","ヵ","ヶ","ヷ","ヸ","ヹ","ヺ"];
+$matrixWidth = intval(`tput cols` / 2);
 
-define('CHARS', array_merge(range('A', 'z'), range('0', '9')));
+define('CELL_LIFE', intdiv($matrixHeight, 1.4));
+
+const CHARS = [
+  "ア","イ","ウ","エ","オ",
+  "カ","キ","ク","ケ","コ",
+  "サ","シ","ス","セ","ソ",
+  "タ","チ","ツ","テ","ト",
+  "ナ","ニ","ヌ","ネ","ノ",
+  "ハ","ヒ","フ","ヘ","ホ",
+  "マ","ミ","ム","メ","モ",
+  "ヤ","ユ","ヨ",
+  "ラ","リ","ル","レ","ロ",
+  "ワ","ヰ","ヱ","ヲ",
+  "ン",
+  "0 ", "1 ","2 ","3 ","4 ","5 ","6 ","7 ","8 ","9 ",
+];
+const VOID = "  ";
+
 define('COLOR_RANGE', [16, 22, 28, 34, 40, 46, 255]);
 class Cell
 {
   public function __construct(
-    public $char = ' ',
+    public $char = VOID,
     public $life = CELL_LIFE,
   ) {}
 }
@@ -62,25 +76,25 @@ while (true) {
     /* @var Cell $cell */
     foreach ($row as $w => $cell) {
       // new cell is empty, copy old cell
-      if ($newMatrix[$h][$w]->char == ' ') {
+      if ($newMatrix[$h][$w]->char == VOID) {
         $newMatrix[$h][$w] = $cell;
       }
 
       // old cell is not empty and next row cell is empty, generate filled cell on next row
-      if ($cell->char != ' ' && $h < $matrixHeight - 1 && $matrix[$h + 1][$w]->char == ' ') {
+      if ($cell->char != VOID && $h < $matrixHeight - 1 && $matrix[$h + 1][$w]->char == VOID) {
         $newMatrix[$h + 1][$w] = new Cell(getRandChar());
       }
 
       // current cell is not empty, decrease life
-      if ($cell->char != ' ') $cell->life--;
+      if ($cell->char != VOID) $cell->life--;
 
       // life is bellow 0, reset all values to defaults
       if ($cell->life < 0) {
         $cell->life = CELL_LIFE;
-        $cell->char = ' ';
+        $cell->char = VOID;
       }
       // life is not bellow zero and current cell is not empty, random chance of changing char
-      elseif ($cell->char != ' ') {
+      elseif ($cell->char != VOID) {
         if (!random_int(0, 9)) $cell->char = getRandChar();
       }
     }
@@ -89,14 +103,18 @@ while (true) {
   $matrix = $newMatrix;
 
   // Rendering
+  $renderBuffer = '';
+
   foreach ($matrix as $h => $row) {
     foreach ($row as $cell) {
       $ci = floor($cell->life / CELL_LIFE * (count(COLOR_RANGE) - 1));
       $color = COLOR_RANGE[$ci];
-      echo "\x1b[38;5;{$color}m";
-      echo $cell->char;
+      $renderBuffer .= "\x1b[38;5;{$color}m";
+      $renderBuffer .= $cell->char;
     }
 
-    echo "\n";
+    $renderBuffer .= "\n";
   }
+
+  echo $renderBuffer;
 }
