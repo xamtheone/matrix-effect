@@ -79,7 +79,12 @@ class Cell
 
 function getRandChar()
 {
-    return CHARS[random_int(0, count(CHARS) - 1)];
+    try {
+        return CHARS[random_int(0, count(CHARS) - 1)];
+    }
+    catch (Exception) {
+        return CHARS[rand(0, count(CHARS) - 1)];
+    }
 }
 
 function getMatrix($height, $width)
