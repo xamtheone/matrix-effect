@@ -120,7 +120,7 @@ while (true) {
 
     usleep(60000);
 
-    // pick a random color to set a value and start the rain
+    // pick a random column to set a value and start the rain
     $col = random_int(0, $matrixWidth - 1);
     $matrix[0][$col] = new Cell(getRandChar());
 
