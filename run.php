@@ -3,7 +3,7 @@
 $matrixHeight = `tput lines` - 1;
 $matrixWidth = intval(`tput cols` / 2);
 
-define('CELL_LIFE', intdiv($matrixHeight, 1.4));
+define('CELL_LIFE', (int) ($matrixHeight / 1.4));
 
 const CHARS = [
     "ア",
