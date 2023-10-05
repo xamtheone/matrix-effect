@@ -54,7 +54,7 @@ function getMatrix($height, $width)
     return $matrix;
 }
 
-$matrix = getMatrix($matrixHeight, $matrixWidth);
+$matrix = [];
 
 // clear screen
 echo "\x1b[2J\x1b[H";
@@ -74,11 +74,11 @@ while (true) {
 
     usleep(60000);
 
+    $newMatrix = getMatrix($matrixHeight, $matrixWidth);
+
     // pick a random column to set a value and start the rain
     $col = random_int(0, $matrixWidth - 1);
-    $matrix[0][$col] = new Cell(getRandChar());
-
-    $newMatrix = getMatrix($matrixHeight, $matrixWidth);
+    $newMatrix[0][$col] = new Cell(getRandChar());
 
     foreach ($matrix as $h => $row) {
         /* @var Cell $cell */
