@@ -6,42 +6,87 @@ $matrixWidth = intval(`tput cols` / 2);
 define('CELL_LIFE', (int) ($matrixHeight / 1.4));
 
 const CHARS = [
-    "ア", "イ", "ウ", "エ", "オ",
-    "カ", "キ", "ク", "ケ", "コ",
-    "サ", "シ", "ス", "セ", "ソ",
-    "タ", "チ", "ツ", "テ", "ト",
-    "ナ", "ニ", "ヌ", "ネ", "ノ",
-    "ハ", "ヒ", "フ", "ヘ", "ホ",
-    "マ", "ミ", "ム", "メ", "モ",
-    "ヤ", "ユ", "ヨ",
-    "ラ", "リ", "ル", "レ", "ロ",
-    "ワ", "ヰ", "ヱ", "ヲ",
-    "ン",
-    "0 ", "1 ", "2 ", "3 ", "4 ", "5 ", "6 ", "7 ", "8 ", "9 ",
+    'ア',
+    'イ',
+    'ウ',
+    'エ',
+    'オ',
+    'カ',
+    'キ',
+    'ク',
+    'ケ',
+    'コ',
+    'サ',
+    'シ',
+    'ス',
+    'セ',
+    'ソ',
+    'タ',
+    'チ',
+    'ツ',
+    'テ',
+    'ト',
+    'ナ',
+    'ニ',
+    'ヌ',
+    'ネ',
+    'ノ',
+    'ハ',
+    'ヒ',
+    'フ',
+    'ヘ',
+    'ホ',
+    'マ',
+    'ミ',
+    'ム',
+    'メ',
+    'モ',
+    'ヤ',
+    'ユ',
+    'ヨ',
+    'ラ',
+    'リ',
+    'ル',
+    'レ',
+    'ロ',
+    'ワ',
+    'ヰ',
+    'ヱ',
+    'ヲ',
+    'ン',
+    '0 ',
+    '1 ',
+    '2 ',
+    '3 ',
+    '4 ',
+    '5 ',
+    '6 ',
+    '7 ',
+    '8 ',
+    '9 ',
 ];
-const VOID = "  ";
+const VOID = '  ';
 
-define('COLOR_RANGE', [16, 22, 28, 34, 40, 46, 255]);
+const COLOR_RANGE = [16, 22, 28, 34, 40, 46, 255];
 
 class Cell
 {
     public function __construct(
-        public $char = VOID,
-        public $life = CELL_LIFE,
+        public string $char = VOID,
+        public int $life = CELL_LIFE,
     ) {}
 }
 
-function getRandChar()
+function getRandChar(): string
 {
     try {
         return CHARS[random_int(0, count(CHARS) - 1)];
-    }
-    catch (Exception) {
+    } catch (Exception) {
         return CHARS[rand(0, count(CHARS) - 1)];
     }
 }
 
-function getMatrix($height, $width)
+function getMatrix(int $height, int $width): array
 {
     $matrix = [];
     for ($i = 0; $i < $height; $i++) {
@@ -64,7 +109,8 @@ echo "\x1b[2J\x1b[H";
  *
  * In the top row of the old matrix, pick a random column and spawn a character if the cell is empty
  * Create a new matrix from the old matrix.
- * For a given column in the old matrix, if a character exists in a row and the next (old) row is empty, add a character to the next (new) row.
+ * For a given column in the old matrix, if a character exists in a row and the next (old) row is empty,
+ * add a character to the next (new) row.
  * Visible cells age at each iteration of the loop and die when their life reaches zero.
  * The resulting matrix is then rendered.
  */
