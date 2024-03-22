@@ -1,7 +1,8 @@
 <?php
 
-$matrixHeight = `tput lines` - 1;
+$matrixHeight = `tput lines` - 2;
 $matrixWidth = intval(`tput cols` / 2);
+$fps = 15;
 
 define('CELL_LIFE', (int) ($matrixHeight / 1.4));
 
@@ -86,7 +87,7 @@ function getRandChar(): string
     }
 }
 
-function getMatrix(int $height, int $width): array
+function getMatrix0(int $height, int $width): array
 {
     $matrix = [];
     for ($i = 0; $i < $height; $i++) {
@@ -99,7 +100,19 @@ function getMatrix(int $height, int $width): array
     return $matrix;
 }
 
+function getMatrix(int $height, int $width): array
+{
+    $matrix = array_fill(0, $height, []);
+    for ($i = 0; $i < $height; $i++) {
+        $matrix[$i] = array_fill(0, $width, new Cell());
+    }
+
+    return $matrix;
+}
+
 $matrix = [];
+$renderingTime = 0;
+$elapsedTime = 0;
 
 // clear screen
 echo "\x1b[2J\x1b[H";
@@ -115,10 +128,17 @@ echo "\x1b[2J\x1b[H";
  * The resulting matrix is then rendered.
  */
 while (true) {
+    $frameTime = microtime(true);
+    $diff = microtime(true) - $elapsedTime;
+    $sleepTime = 1 / $fps - $diff;
+
+    if ($sleepTime > 0) {
+        usleep($sleepTime * 1_000_000);
+    }
+
+    $elapsedTime = microtime(true);
     // set cursor to top-left
     echo "\x1b[H";
-
-    usleep(60000);
 
     $newMatrix = getMatrix($matrixHeight, $matrixWidth);
 
@@ -126,6 +146,7 @@ while (true) {
     $col = random_int(0, $matrixWidth - 1);
     $newMatrix[0][$col] = new Cell(getRandChar());
 
+    $processTime = microtime(true);
     foreach ($matrix as $h => $row) {
         /* @var Cell $cell */
         foreach ($row as $w => $cell) {
@@ -156,22 +177,29 @@ while (true) {
             }
         }
     }
-
+    
     $matrix = $newMatrix;
 
-    // Rendering
-    $renderBuffer = '';
+    $processTime = microtime(true) - $processTime;
 
+    // Rendering
+    $renderingTime = microtime(true);
     foreach ($matrix as $h => $row) {
+        $renderBuffer = '';
         foreach ($row as $cell) {
             $ci = floor($cell->life / CELL_LIFE * (count(COLOR_RANGE) - 1));
             $color = COLOR_RANGE[$ci];
-            $renderBuffer .= "\x1b[38;5;{$color}m";
-            $renderBuffer .= $cell->char;
+            $renderBuffer .= "\x1b[38;5;{$color}m$cell->char";
         }
 
-        $renderBuffer .= "\n";
+        echo "$renderBuffer\n";
     }
-
-    echo $renderBuffer;
+    $renderingTime = microtime(true) - $renderingTime;
+    
+    echo "\n\x1b[38;5;255m";
+    echo "Matrix size: $matrixHeight x $matrixWidth ";
+    echo "Process time: " . number_format($processTime, 4) . " ";
+    echo "Rendering time: " . number_format($renderingTime, 4) . " ";
+    echo "Memory usage: " . number_format(memory_get_usage() / 1024, 2) . "KB ";
+    echo "FPS: " . number_format(1 / (microtime(true) - $frameTime), 2) . " ";
 }
