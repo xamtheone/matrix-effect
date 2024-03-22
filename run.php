@@ -2,7 +2,7 @@
 
 $matrixHeight = `tput lines` - 2;
 $matrixWidth = intval(`tput cols` / 2);
-$fps = 15;
+$fps = 32;
 
 define('CELL_LIFE', (int) ($matrixHeight / 1.4));
 
