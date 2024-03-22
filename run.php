@@ -134,24 +134,24 @@ while (true) {
                 $newMatrix[$h][$w] = $cell;
             }
 
-            // old cell is not empty and next row cell is empty, generate filled cell on next row
-            if ($cell->char != VOID && $h < $matrixHeight - 1 && $matrix[$h + 1][$w]->char == VOID) {
-                $newMatrix[$h + 1][$w] = new Cell(getRandChar());
-            }
-
-            // current cell is not empty, decrease life
+            // current cell is not empty
             if ($cell->char != VOID) {
+                // decrease life
                 $cell->life--;
-            }
 
-            // life is bellow 0, reset all values to defaults
-            if ($cell->life < 0) {
-                $cell->life = CELL_LIFE;
-                $cell->char = VOID;
-            } // life is not bellow zero and current cell is not empty, random chance of changing char
-            elseif ($cell->char != VOID) {
-                if (!random_int(0, 9)) {
+                // life is bellow 0, reset all values to defaults
+                if ($cell->life < 0) {
+                    $cell->life = CELL_LIFE;
+                    $cell->char = VOID;
+                }
+                // life is not bellow zero and current cell is not empty, random chance of changing char
+                elseif (!random_int(0, 9)) {
                     $cell->char = getRandChar();
+                }
+
+                // next row cell is empty, generate filled cell on next row
+                if ($h < $matrixHeight - 1 && $matrix[$h + 1][$w]->char == VOID) {
+                    $newMatrix[$h + 1][$w] = new Cell(getRandChar());
                 }
             }
         }
