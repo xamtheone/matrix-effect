@@ -197,9 +197,9 @@ while (true) {
     $renderingTime = microtime(true) - $renderingTime;
     
     echo "\n\x1b[38;5;255m";
-    echo "Matrix size: $matrixHeight x $matrixWidth ";
-    echo "Process time: " . number_format($processTime, 4) . " ";
-    echo "Rendering time: " . number_format($renderingTime, 4) . " ";
-    echo "Memory usage: " . number_format(memory_get_usage() / 1024, 2) . "KB ";
-    echo "FPS: " . number_format(1 / (microtime(true) - $frameTime), 2) . " ";
+    echo "{$matrixHeight}x$matrixWidth ";
+    echo "Process: " . number_format($processTime, 4) . " ";
+    echo "Render: " . number_format($renderingTime, 4) . " ";
+    echo "Memory: " . number_format(memory_get_peak_usage() / 1024, 2) . "KB ";
+    echo "FPS: " . str_pad(number_format(1 / (microtime(true) - $frameTime), 2), 8, " ", STR_PAD_LEFT) . " ";
 }
