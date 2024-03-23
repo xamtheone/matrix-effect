@@ -70,6 +70,8 @@ const VOID = '  ';
 
 const COLOR_RANGE = [16, 22, 28, 34, 40, 46, 255];
 
+$colorRangeLastOffset = count(COLOR_RANGE) - 1;
+
 class Cell
 {
     public function __construct(
@@ -184,12 +186,10 @@ while (true) {
 
     // Rendering
     $renderingTime = microtime(true);
-    foreach ($matrix as $h => $row) {
+    foreach ($matrix as $row) {
         $renderBuffer = '';
         foreach ($row as $cell) {
-            $ci = floor($cell->life / CELL_LIFE * (count(COLOR_RANGE) - 1));
-            $color = COLOR_RANGE[$ci];
-            $renderBuffer .= "\x1b[38;5;{$color}m$cell->char";
+            $renderBuffer .= "\x1b[38;5;" . COLOR_RANGE[(int) ($cell->life / CELL_LIFE * $colorRangeLastOffset)] . "m$cell->char";
         }
 
         echo "$renderBuffer\n";
