@@ -77,6 +77,7 @@ class Cell
     public function __construct(
         public string $char = VOID,
         public int $life = CELL_LIFE,
+        public string $nextChar = VOID,
     ) {}
 }
 
@@ -89,7 +90,7 @@ function getRandChar(): string
     }
 }
 
-function getMatrix0(int $height, int $width): array
+function getMatrix(int $height, int $width): array
 {
     $matrix = [];
     for ($i = 0; $i < $height; $i++) {
@@ -102,17 +103,7 @@ function getMatrix0(int $height, int $width): array
     return $matrix;
 }
 
-function getMatrix(int $height, int $width): array
-{
-    $matrix = array_fill(0, $height, []);
-    for ($i = 0; $i < $height; $i++) {
-        $matrix[$i] = array_fill(0, $width, new Cell());
-    }
-
-    return $matrix;
-}
-
-$matrix = [];
+$matrix = getMatrix($matrixHeight, $matrixWidth);
 $renderingTime = 0;
 $elapsedTime = 0;
 
@@ -142,21 +133,15 @@ while (true) {
     // set cursor to top-left
     echo "\x1b[H";
 
-    $newMatrix = getMatrix($matrixHeight, $matrixWidth);
-
     // pick a random column to set a value and start the rain
     $col = random_int(0, $matrixWidth - 1);
-    $newMatrix[0][$col] = new Cell(getRandChar());
+    $matrix[0][$col]->nextChar = getRandChar();
+    $matrix[0][$col]->life = CELL_LIFE;
 
     $processTime = microtime(true);
     foreach ($matrix as $h => $row) {
         /* @var Cell $cell */
         foreach ($row as $w => $cell) {
-            // new cell is empty, copy old cell
-            if ($newMatrix[$h][$w]->char == VOID) {
-                $newMatrix[$h][$w] = $cell;
-            }
-
             // current cell is not empty
             if ($cell->char != VOID) {
                 // decrease life
@@ -165,22 +150,29 @@ while (true) {
                 // life is bellow 0, reset all values to defaults
                 if ($cell->life < 0) {
                     $cell->life = CELL_LIFE;
-                    $cell->char = VOID;
-                }
-                // life is not bellow zero and current cell is not empty, random chance of changing char
+                    $cell->nextChar = VOID;
+                } // life is not bellow zero and current cell is not empty, random chance of changing char
                 elseif (!random_int(0, 9)) {
-                    $cell->char = getRandChar();
+                    $cell->nextChar = getRandChar();
                 }
 
                 // next row cell is empty, generate filled cell on next row
-                if ($h < $matrixHeight - 1 && $matrix[$h + 1][$w]->char == VOID) {
-                    $newMatrix[$h + 1][$w] = new Cell(getRandChar());
+                if ($h < $matrixHeight - 1) {
+                    $nextRowCell = $matrix[$h + 1][$w];
+                    if ($nextRowCell?->char == VOID) {
+                        $nextRowCell->nextChar = getRandChar();
+                        $nextRowCell->life = CELL_LIFE;
+                    }
                 }
             }
         }
     }
-    
-    $matrix = $newMatrix;
+
+    foreach ($matrix as $row) {
+        foreach ($row as $cell) {
+            $cell->char = $cell->nextChar;
+        }
+    }
 
     $processTime = microtime(true) - $processTime;
 
@@ -195,7 +187,7 @@ while (true) {
         echo "$renderBuffer\n";
     }
     $renderingTime = microtime(true) - $renderingTime;
-    
+
     echo "\n\x1b[38;5;255m";
     echo "{$matrixHeight}x$matrixWidth ";
     echo "Process: " . number_format($processTime, 4) . " ";
