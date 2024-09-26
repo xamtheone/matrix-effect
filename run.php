@@ -126,8 +126,6 @@ while (true) {
     }
 
     $elapsedTime = microtime(true);
-    // set cursor to top-left
-    echo "\x1b[H";
 
     // pick a random column to set a value and start the rain
     $col = rand(0, $matrixWidth - 1);
@@ -174,6 +172,10 @@ while (true) {
 
     // Rendering
     $renderingTime = microtime(true);
+
+    // set cursor to top-left
+    echo "\x1b[H";
+
     foreach ($matrix as $row) {
         $renderBuffer = '';
         foreach ($row as $cell) {
