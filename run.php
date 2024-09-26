@@ -83,11 +83,7 @@ class Cell
 
 function getRandChar(): string
 {
-    try {
-        return CHARS[random_int(0, count(CHARS) - 1)];
-    } catch (Exception) {
-        return CHARS[rand(0, count(CHARS) - 1)];
-    }
+    return CHARS[rand(0, count(CHARS) - 1)];
 }
 
 function getMatrix(int $height, int $width): array
@@ -134,7 +130,7 @@ while (true) {
     echo "\x1b[H";
 
     // pick a random column to set a value and start the rain
-    $col = random_int(0, $matrixWidth - 1);
+    $col = rand(0, $matrixWidth - 1);
     $matrix[0][$col]->nextChar = getRandChar();
     $matrix[0][$col]->life = CELL_LIFE;
 
@@ -152,7 +148,7 @@ while (true) {
                     $cell->life = CELL_LIFE;
                     $cell->nextChar = VOID;
                 } // life is not bellow zero and current cell is not empty, random chance of changing char
-                elseif (!random_int(0, 9)) {
+                elseif (!rand(0, 9)) {
                     $cell->nextChar = getRandChar();
                 }
 
