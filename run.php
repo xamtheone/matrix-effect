@@ -159,11 +159,7 @@ while (true) {
                     }
                 }
             }
-        }
-    }
 
-    foreach ($matrix as $row) {
-        foreach ($row as $cell) {
             $cell->char = $cell->nextChar;
         }
     }
