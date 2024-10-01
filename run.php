@@ -121,7 +121,7 @@ echo "\x1b[2J\x1b[H";
  */
 while (true) {
     $frameTime = microtime(true);
-    $diff = microtime(true) - $elapsedTime;
+    $diff = $frameTime - $elapsedTime;
     $sleepTime = 1 / $fps - $diff;
 
     if ($sleepTime > 0) {
@@ -167,10 +167,12 @@ while (true) {
         }
     }
 
-    $processTime = microtime(true) - $processTime;
+    $endProcess = microtime(true);
+
+    $processTime = $endProcess - $processTime;
 
     // Rendering
-    $renderingTime = microtime(true);
+    $renderingTime = $endProcess;
 
     // set cursor to top-left
     echo "\x1b[H";
