@@ -70,7 +70,10 @@ const VOID = '  ';
 
 const COLOR_RANGE = [16, 22, 28, 34, 40, 46, 255];
 
-$colorRangeLastOffset = count(COLOR_RANGE) - 1;
+$colorMapping = [];
+for ($i = 0; $i <= CELL_LIFE; $i++) {
+    $colorMapping[$i] = COLOR_RANGE[(int)($i / CELL_LIFE * (count(COLOR_RANGE) - 1))];
+}
 
 class Cell
 {
@@ -175,7 +178,7 @@ while (true) {
     foreach ($matrix as $row) {
         $renderBuffer = '';
         foreach ($row as $cell) {
-            $renderBuffer .= "\x1b[38;5;" . COLOR_RANGE[(int) ($cell->life / CELL_LIFE * $colorRangeLastOffset)] . "m$cell->char";
+            $renderBuffer .= "\x1b[38;5;" . $colorMapping[$cell->life] . "m$cell->char";
         }
 
         echo "$renderBuffer\n";
