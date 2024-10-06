@@ -80,7 +80,6 @@ class Cell
     public function __construct(
         public string $char = VOID,
         public int $life = CELL_LIFE,
-        public string $nextChar = VOID,
     ) {}
 }
 
@@ -133,14 +132,12 @@ while (true) {
 
     // pick a random column to set a value and start the rain
     $col = rand(0, $matrixWidth - 1);
-    $matrix[0][$col]->nextChar = getRandChar();
+    $matrix[0][$col]->char = getRandChar();
     $matrix[0][$col]->life = CELL_LIFE;
 
-    $previousRow = null;
-
-    foreach ($matrix as $h => $row) {
+    for ($h = $matrixHeight - 1; $h >= 0; $h--) {
         /* @var Cell $cell */
-        foreach ($row as $w => $cell) {
+        foreach ($matrix[$h] as $w => $cell) {
             // current cell is not empty
             if ($cell->char != VOID) {
                 // decrease life
@@ -149,25 +146,16 @@ while (true) {
                 // life is bellow 0, reset all values to defaults
                 if ($cell->life < 0) {
                     $cell->life = CELL_LIFE;
-                    $cell->nextChar = VOID;
+                    $cell->char = VOID;
                 } elseif (!rand(0, 9)) {
                     // life is not bellow zero and current cell is not empty, random chance of changing char
-                    $cell->nextChar = getRandChar();
+                    $cell->char = getRandChar();
                 }
-            } elseif ($previousRow && $previousRow[$w]->char != VOID) {
-                // Previous row cell is not empty and current cell is empty, generate filled cell
-                $cell->nextChar = getRandChar();
+            } elseif ($h > 0 && $matrix[$h - 1][$w]->char != VOID) {
+                // Above row cell is not empty and current cell is empty, generate filled cell
+                $cell->char = getRandChar();
                 $cell->life = CELL_LIFE;
             }
-        }
-
-        $previousRow = $row;
-    }
-
-    foreach ($matrix as $h => $row) {
-        /* @var Cell $cell */
-        foreach ($row as $w => $cell) {
-            $cell->char = $cell->nextChar;
         }
     }
 
