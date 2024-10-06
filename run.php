@@ -104,6 +104,8 @@ function getMatrix(int $height, int $width): array
 $matrix = getMatrix($matrixHeight, $matrixWidth);
 $renderingTime = 0;
 $elapsedTime = 0;
+$avg = array_fill(0, 8, 0.0);
+$avgIndex = 0;
 
 // clear screen
 echo "\x1b[2J\x1b[H";
@@ -179,10 +181,14 @@ while (true) {
     }
     $renderingTime = microtime(true) - $renderingTime;
 
+    $avgIndex = ($avgIndex + 1) % count($avg);
+    $avg[$avgIndex] = $processTime + $renderingTime;
+
     echo "\n\x1b[38;5;255m";
     echo "{$matrixHeight}x$matrixWidth ";
     echo "Process: " . number_format($processTime, 5) . " ";
     echo "Render: " . number_format($renderingTime, 4) . " ";
+    echo "Avg total:" . number_format(array_sum($avg) / count($avg), 5) . " ";
     echo "Memory: " . number_format(memory_get_peak_usage() / 1024, 2) . "KB ";
     echo "FPS: " . str_pad(number_format(1 / (microtime(true) - $frameTime), 2), 8, " ", STR_PAD_LEFT) . " ";
 }
