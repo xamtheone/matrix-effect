@@ -7,6 +7,7 @@ $fps = 32;
 define('CELL_LIFE', (int) ($matrixHeight / 1.4));
 
 const CHARS = [
+    '  ',
     'ア',
     'イ',
     'ウ',
@@ -66,7 +67,7 @@ const CHARS = [
     '8 ',
     '9 ',
 ];
-const VOID = '  ';
+const VOID = 0;
 
 const COLOR_RANGE = [16, 22, 28, 34, 40, 46, 255];
 
@@ -78,14 +79,14 @@ for ($i = 0; $i <= CELL_LIFE; $i++) {
 class Cell
 {
     public function __construct(
-        public string $char = VOID,
+        public int $char = VOID,
         public int $life = CELL_LIFE,
     ) {}
 }
 
-function getRandChar(): string
+function getRandChar(): int
 {
-    return CHARS[rand(0, count(CHARS) - 1)];
+    return rand(1, count(CHARS) - 1);
 }
 
 function getMatrix(int $height, int $width): array
@@ -174,7 +175,7 @@ while (true) {
     foreach ($matrix as $row) {
         $renderBuffer = '';
         foreach ($row as $cell) {
-            $renderBuffer .= "\x1b[38;5;" . $colorMapping[$cell->life] . "m$cell->char";
+            $renderBuffer .= "\x1b[38;5;" . $colorMapping[$cell->life] . "m" . CHARS[$cell->char];
         }
 
         echo "$renderBuffer\n";
