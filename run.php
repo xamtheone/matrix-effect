@@ -129,13 +129,15 @@ while (true) {
     }
 
     $elapsedTime = microtime(true);
+    $processTime = $elapsedTime;
 
     // pick a random column to set a value and start the rain
     $col = rand(0, $matrixWidth - 1);
     $matrix[0][$col]->nextChar = getRandChar();
     $matrix[0][$col]->life = CELL_LIFE;
 
-    $processTime = microtime(true);
+    $previousRow = null;
+
     foreach ($matrix as $h => $row) {
         /* @var Cell $cell */
         foreach ($row as $w => $cell) {
@@ -148,21 +150,23 @@ while (true) {
                 if ($cell->life < 0) {
                     $cell->life = CELL_LIFE;
                     $cell->nextChar = VOID;
-                } // life is not bellow zero and current cell is not empty, random chance of changing char
-                elseif (!rand(0, 9)) {
+                } elseif (!rand(0, 9)) {
+                    // life is not bellow zero and current cell is not empty, random chance of changing char
                     $cell->nextChar = getRandChar();
                 }
-
-                // next row cell is empty, generate filled cell on next row
-                if ($h < $matrixHeight - 1) {
-                    $nextRowCell = $matrix[$h + 1][$w];
-                    if ($nextRowCell?->char == VOID) {
-                        $nextRowCell->nextChar = getRandChar();
-                        $nextRowCell->life = CELL_LIFE;
-                    }
-                }
+            } elseif ($previousRow && $previousRow[$w]->char != VOID) {
+                // Previous row cell is not empty and current cell is empty, generate filled cell
+                $cell->nextChar = getRandChar();
+                $cell->life = CELL_LIFE;
             }
+        }
 
+        $previousRow = $row;
+    }
+
+    foreach ($matrix as $h => $row) {
+        /* @var Cell $cell */
+        foreach ($row as $w => $cell) {
             $cell->char = $cell->nextChar;
         }
     }
