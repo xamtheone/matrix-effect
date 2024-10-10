@@ -115,10 +115,9 @@ echo "\x1b[2J\x1b[H";
  * Main loop
  *
  * In the top row of the old matrix, pick a random column and spawn a character if the cell is empty
- * Create a new matrix from the old matrix.
- * For a given column in the old matrix, if a character exists in a row and the next (old) row is empty,
- * add a character to the next (new) row.
- * Visible cells age at each iteration of the loop and die when their life reaches zero.
+ * Starting from the last row, for a given column in the matrix, if no character (VOID) is in a cell and there is one in the cell above,
+ * add a character to the cell.
+ * Visible cells age at each iteration of the loop and die when their life reaches zero (turning into VOID).
  * The resulting matrix is then rendered.
  */
 while (true) {
