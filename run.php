@@ -126,7 +126,7 @@ while (true) {
     $sleepTime = 1 / $fps - $diff;
 
     if ($sleepTime > 0) {
-        usleep($sleepTime * 1_000_000);
+        usleep((int) ($sleepTime * 1_000_000));
     }
 
     $elapsedTime = microtime(true);
