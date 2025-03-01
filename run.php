@@ -1,7 +1,14 @@
 <?php
 
-$matrixHeight = `tput lines` - 2;
-$matrixWidth = intval(`tput cols` / 2);
+$terminalLines = `tput lines`;
+$terminalCols = `tput cols`;
+
+if (!is_numeric($terminalLines) || !is_numeric($terminalCols)) {
+    die("Can't get terminal height and/or columns\n");
+}
+
+$matrixHeight = (int) $terminalLines - 2;
+$matrixWidth = intval($terminalCols / 2);
 $fps = 32;
 
 define('CELL_LIFE', (int) ($matrixHeight / 1.4));
@@ -67,8 +74,8 @@ const CHARS = [
     '8 ',
     '9 ',
 ];
-const VOID = 0;
 
+const VOID = 0;
 const COLOR_RANGE = [16, 22, 28, 34, 40, 46, 255];
 
 $colorMapping = [];
@@ -89,6 +96,9 @@ function getRandChar(): int
     return rand(1, count(CHARS) - 1);
 }
 
+/**
+ * @return array<array<Cell>>
+ */
 function getMatrix(int $height, int $width): array
 {
     $matrix = [];
@@ -112,14 +122,16 @@ $avgIndex = 0;
 echo "\x1b[2J\x1b[H";
 
 /*
- * Main loop
- *
- * In the top row of the old matrix, pick a random column and spawn a character if the cell is empty
- * Starting from the last row, for a given column in the matrix, if no character (VOID) is in a cell and there is one in the cell above,
- * add a character to the cell.
- * Visible cells age at each iteration of the loop and die when their life reaches zero (turning into VOID).
- * The resulting matrix is then rendered.
- */
+Main loop
+
+In the top row of the old matrix, pick a random column and spawn a character if the cell is empty
+Starting from the last row, for a given column in the matrix, if no character (VOID) is in a cell and there is one in the cell above,
+add a character to the cell.
+Visible cells age at each iteration of the loop and die when their life reaches zero (turning into VOID).
+The resulting matrix is then rendered.
+*/
+
+// @phpstan-ignore while.alwaysTrue
 while (true) {
     $frameTime = microtime(true);
     $diff = $frameTime - $elapsedTime;
