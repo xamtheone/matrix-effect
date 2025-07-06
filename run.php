@@ -93,7 +93,7 @@ class Cell
 
 function getRandChar(): int
 {
-    return rand(1, count(CHARS) - 1);
+    return mt_rand(1, count(CHARS) - 1);
 }
 
 /**
@@ -161,7 +161,7 @@ while (true) {
                 if ($cell->life < 0) {
                     $cell->life = CELL_LIFE;
                     $cell->char = VOID;
-                } elseif (rand(0, 9) === 0) {
+                } elseif (mt_rand(0, 9) === 0) {
                     // life is not bellow zero and current cell is not empty, random chance of changing char
                     $cell->char = getRandChar();
                 }
