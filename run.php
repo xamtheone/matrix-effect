@@ -101,7 +101,7 @@ if (!is_numeric($terminalLines) || !is_numeric($terminalCols)) {
     die("Can't get terminal height and/or columns\n");
 }
 
-$matrixHeight = (int) $terminalLines - 2;
+$matrixHeight = (int) $terminalLines - 1;
 $matrixWidth = intval($terminalCols / 2);
 $fps = 32;
 
@@ -203,7 +203,7 @@ while (true) {
     $avgIndex = ($avgIndex + 1) % count($avg);
     $avg[$avgIndex] = $processTime + $renderingTime;
 
-    echo "\n\x1b[38;5;255m";
+    echo "\x1b[38;5;255m";
     echo "{$matrixHeight}x$matrixWidth ";
     echo "Process: " . number_format($processTime, 5) . " ";
     echo "Render: " . number_format($renderingTime, 4) . " ";
