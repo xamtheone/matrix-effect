@@ -120,6 +120,13 @@ $avgIndex = 0;
 
 // clear screen
 echo "\x1b[2J\x1b[H";
+// Hide cursor
+echo "\033[?25l";
+register_shutdown_function(fn() => print("\033[0m\033[?25h"));
+
+// Allow to call shutdown function on Ctrl+C
+pcntl_async_signals(true);
+pcntl_signal(SIGINT, fn() => exit(0));
 
 /*
 Main loop
