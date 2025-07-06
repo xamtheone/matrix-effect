@@ -1,18 +1,5 @@
 <?php declare(strict_types=1);
 
-$terminalLines = shell_exec('tput lines');
-$terminalCols = shell_exec('tput cols');
-
-if (!is_numeric($terminalLines) || !is_numeric($terminalCols)) {
-    die("Can't get terminal height and/or columns\n");
-}
-
-$matrixHeight = (int) $terminalLines - 2;
-$matrixWidth = intval($terminalCols / 2);
-$fps = 32;
-
-define('CELL_LIFE', (int) ($matrixHeight / 1.4));
-
 const CHARS = [
     '  ',
     'ア',
@@ -78,11 +65,6 @@ const CHARS = [
 const VOID = 0;
 const COLOR_RANGE = [16, 22, 28, 34, 40, 46, 255];
 
-$colorMapping = [];
-for ($i = 0; $i <= CELL_LIFE; $i++) {
-    $colorMapping[$i] = COLOR_RANGE[(int) ($i / CELL_LIFE * (count(COLOR_RANGE) - 1))];
-}
-
 class Cell
 {
     public function __construct(
@@ -110,6 +92,24 @@ function getMatrix(int $height, int $width): array
     }
 
     return $matrix;
+}
+
+$terminalLines = shell_exec('tput lines');
+$terminalCols = shell_exec('tput cols');
+
+if (!is_numeric($terminalLines) || !is_numeric($terminalCols)) {
+    die("Can't get terminal height and/or columns\n");
+}
+
+$matrixHeight = (int) $terminalLines - 2;
+$matrixWidth = intval($terminalCols / 2);
+$fps = 32;
+
+define('CELL_LIFE', (int) ($matrixHeight / 1.4));
+
+$colorMapping = [];
+for ($i = 0; $i <= CELL_LIFE; $i++) {
+    $colorMapping[$i] = COLOR_RANGE[(int) ($i / CELL_LIFE * (count(COLOR_RANGE) - 1))];
 }
 
 $matrix = getMatrix($matrixHeight, $matrixWidth);
