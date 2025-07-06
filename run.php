@@ -122,7 +122,7 @@ $avgIndex = 0;
 echo "\x1b[2J\x1b[H";
 // Hide cursor
 echo "\033[?25l";
-register_shutdown_function(fn() => print("\033[0m\033[?25h"));
+register_shutdown_function(fn () => print "\033[0m\033[?25h");
 
 // Allow to call shutdown function on Ctrl+C
 pcntl_async_signals(true);
