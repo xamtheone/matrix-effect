@@ -80,7 +80,7 @@ const COLOR_RANGE = [16, 22, 28, 34, 40, 46, 255];
 
 $colorMapping = [];
 for ($i = 0; $i <= CELL_LIFE; $i++) {
-    $colorMapping[$i] = COLOR_RANGE[(int)($i / CELL_LIFE * (count(COLOR_RANGE) - 1))];
+    $colorMapping[$i] = COLOR_RANGE[(int) ($i / CELL_LIFE * (count(COLOR_RANGE) - 1))];
 }
 
 class Cell
@@ -127,7 +127,7 @@ Main loop
 In the top row of the old matrix, pick a random column and spawn a character if the cell is empty
 Starting from the last row, for a given column in the matrix, if no character (VOID) is in a cell and there is one in the cell above,
 add a character to the cell.
-Visible cells age at each iteration of the loop and die when their life reaches zero (turning into VOID).
+Visible cells age at each iteration of the loop and die when their life reaches -1 (turning into VOID).
 The resulting matrix is then rendered.
 */
 
