@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
-$terminalLines = `tput lines`;
-$terminalCols = `tput cols`;
+$terminalLines = shell_exec('tput lines');
+$terminalCols = shell_exec('tput cols');
 
 if (!is_numeric($terminalLines) || !is_numeric($terminalCols)) {
     die("Can't get terminal height and/or columns\n");
@@ -153,7 +153,7 @@ while (true) {
         /* @var Cell $cell */
         foreach ($matrix[$h] as $w => $cell) {
             // current cell is not empty
-            if ($cell->char != VOID) {
+            if ($cell->char !== VOID) {
                 // decrease life
                 $cell->life--;
 
@@ -161,11 +161,11 @@ while (true) {
                 if ($cell->life < 0) {
                     $cell->life = CELL_LIFE;
                     $cell->char = VOID;
-                } elseif (!rand(0, 9)) {
+                } elseif (rand(0, 9) === 0) {
                     // life is not bellow zero and current cell is not empty, random chance of changing char
                     $cell->char = getRandChar();
                 }
-            } elseif ($h > 0 && $matrix[$h - 1][$w]->char != VOID) {
+            } elseif ($h > 0 && $matrix[$h - 1][$w]->char !== VOID) {
                 // Above row cell is not empty and current cell is empty, generate filled cell
                 $cell->char = getRandChar();
                 $cell->life = CELL_LIFE;
