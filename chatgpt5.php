@@ -2,9 +2,9 @@
 <?php
 declare(strict_types=1);
 
-// ===== CONFIG =====
 mb_internal_encoding('UTF-8');
 mb_language('uni');
+
 define('FPS', 32);
 $frameUs = intdiv(1_000_000, FPS);
 define('MIN_TRAIL', 6);
@@ -12,14 +12,13 @@ define('MAX_TRAIL', 18);
 define('NEW_STREAM_PROB', 0.02);
 define('CHAR_CHANGE_PROB', 0.08);
 define('HEAD_BRIGHT_PROB', 0.12);
-define('FADE_STEPS', 9); // last step = blank
+define('FADE_STEPS', 9); // last step blank
 
 $digits = str_split('0123456789');
 $katakanaStr = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲンヴガギグゲゴザジズゼゾダヂヅデドバビブベボパピプペポァィゥェォャュョッー';
 $katakana = preg_split('//u', $katakanaStr, -1, PREG_SPLIT_NO_EMPTY);
 $charset = array_merge($digits, $katakana);
 
-// ===== HELPERS =====
 function getTerminalSize(): array {
     $out = @shell_exec('stty size 2>/dev/null');
     if ($out) {
@@ -39,15 +38,14 @@ function resetAttr(): void { echo "\033[0m"; }
 function ansi256(int $n): string { return "\033[38;5;{$n}m"; }
 function randChar(array $set): string { return $set[random_int(0, count($set)-1)]; }
 
-// ===== FADE PALETTE =====
 $fadePalette = [];
 for ($i = 0; $i < FADE_STEPS; $i++) {
-    $t = 1.0 - ($i / (FADE_STEPS - 1)); // 1..0
+    $t = 1.0 - ($i / (FADE_STEPS - 1));
     if ($i === FADE_STEPS - 1) {
-        $fadePalette[$i] = ''; // last step = disappear
+        $fadePalette[$i] = '';
     } elseif ($t > 0.3) {
         $g = (int)round($t * 5);
-        $fadePalette[$i] = ansi256(16 + (36*0) + (6*$g) + 0); // green cube
+        $fadePalette[$i] = ansi256(16 + (36*0) + (6*$g) + 0);
     } else {
         $grayIdx = 232 + (int)round($t / 0.3 * 5);
         $fadePalette[$i] = ansi256(max(232, min(255, $grayIdx)));
@@ -55,7 +53,6 @@ for ($i = 0; $i < FADE_STEPS; $i++) {
 }
 $whiteHead = ansi256(15);
 
-// ===== CLEANUP =====
 $running = true;
 register_shutdown_function(function(){
     resetAttr();
@@ -70,7 +67,6 @@ if (function_exists('pcntl_async_signals')) {
     pcntl_signal(SIGTERM, fn()=> $GLOBALS['running']=false);
 }
 
-// ===== INIT =====
 [$termCols, $termRows] = getTerminalSize();
 $cellWidth = max(array_map('mb_strwidth', $charset));
 $logicalCols = max(1, intdiv($termCols, $cellWidth));
@@ -80,13 +76,14 @@ echo "\033[?1049h"; // alt buffer
 hideCursor();
 clearScreen();
 
-// ===== MAIN LOOP =====
+$fpsAvg = 0;
+$alpha = 0.1;
+$tick = 0;
+
 while ($running) {
     $frameStart = microtime(true);
 
-    // occasional resize check
-    static $tick=0; $tick++;
-    if ($tick % 10 === 0) {
+    if (++$tick % 10 === 0) {
         [$termCols, $termRows] = getTerminalSize();
         $logicalColsNew = max(1, intdiv($termCols, $cellWidth));
         if ($logicalColsNew !== count($streams)) {
@@ -94,7 +91,7 @@ while ($running) {
         }
     }
 
-    // update streams
+    // update
     foreach ($streams as $col => $s) {
         if ($s === null) {
             if (mt_rand()/mt_getrandmax() < NEW_STREAM_PROB) {
@@ -125,17 +122,18 @@ while ($running) {
         $streams[$col]=$s;
     }
 
-    // render
+    $renderStart = microtime(true);
+
     foreach ($streams as $col => $s) {
         if ($s===null) continue;
         foreach ($s['chars'] as $row => $e) {
             $step = min(FADE_STEPS-1, (int)floor($e['age'] / max(1, $s['len']) * FADE_STEPS));
             $color = $fadePalette[$step];
             $dispCol = $col*$cellWidth+1;
-            if ($dispCol+$cellWidth-1>$termCols||$row<1||$row>$termRows) continue;
+            if ($dispCol+$cellWidth-1>$termCols||$row<1||$row>$termRows-1) continue;
             moveCursor($row, $dispCol);
             if ($color==='') {
-                echo str_repeat(' ', $cellWidth); // erase fully
+                echo str_repeat(' ', $cellWidth);
             } else {
                 $headBright = ($e['age']===0 && mt_rand()/mt_getrandmax() < HEAD_BRIGHT_PROB);
                 echo ($headBright?$whiteHead:$color) . $e['ch']
@@ -145,13 +143,34 @@ while ($running) {
         }
     }
 
+    $renderTime = microtime(true) - $renderStart;
+
+    $procTime = microtime(true) - $frameStart;
+
+    // --- FPS LIMIT ---
+    $sleepUs = $frameUs - (int)($procTime * 1_000_000);
+    if ($sleepUs > 0) usleep($sleepUs);
+
+    // --- TRUE FRAME TIME (incl. sleep) ---
+    $frameTime = microtime(true) - $frameStart;
+    $fps = $frameTime > 0 ? (1.0 / $frameTime) : 0;
+    $fpsAvg = ($fpsAvg === 0) ? $fps : ($fpsAvg*(1-$alpha) + $fps*$alpha);
+
+    // --- STATS ---
+    moveCursor($termRows, 1);
+    resetAttr();
+    printf(
+        "Proc: %6.2f ms | Render: %6.2f ms | Mem: %6.1f KB | FPS: %5.2f   ",
+        $procTime*1000,
+        $renderTime*1000,
+        memory_get_usage(true)/1024,
+        $fpsAvg
+    );
+
     fflush(STDOUT);
-    $sleepUs = $frameUs - (int)((microtime(true)-$frameStart)*1_000_000);
-    if ($sleepUs>0) usleep($sleepUs);
     if (function_exists('pcntl_signal_dispatch')) pcntl_signal_dispatch();
 }
 
-// ===== END =====
 resetAttr();
 showCursor();
 clearScreen();
